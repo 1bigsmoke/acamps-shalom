@@ -1,0 +1,733 @@
+/* ==========================================================================
+   SITE DE EVANGELIZAÇÃO · ACAMPs 2027
+   Comunidade Católica Shalom de Santos
+
+   Índice
+   1. Cores, fontes e modo escuro   (mude as cores aqui)
+   2. Base da página
+   3. Fundo (canvas, sol e bolinhas)
+   4. Layout geral e troca de telas
+   5. Tela inicial
+   6. Botões
+   7. Cartão da mensagem
+   8. Chamada do ACAMPs 2027
+   9. Rodapé
+   10. Acessibilidade
+   ========================================================================== */
+
+
+/* ==========================================================================
+   1. CORES, FONTES E MODO ESCURO
+   ========================================================================== */
+
+:root {
+  /* Cores principais */
+  --laranja: #FF6A00;
+  --laranja-escuro: #E24E00;
+  --amarelo: #FFC933;
+  --amarelo-claro: #FFE27A;
+  --branco: #FFFFFF;
+
+  /* Cartão da mensagem (modo claro) */
+  --card: #FFFFFF;
+  --card-borda: rgba(255, 255, 255, 0.7);
+  --texto: #3A1C08;
+  --texto-suave: #7A4A2A;
+
+  /* Fontes */
+  --fonte-titulo: 'Baloo 2', 'Trebuchet MS', system-ui, sans-serif;
+  --fonte-texto: 'Nunito', 'Segoe UI', system-ui, sans-serif;
+
+  /* Respeita as áreas do celular (entalhe e barra inferior) */
+  box-sizing: border-box;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* Modo escuro automático (segue o aparelho) */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --card: #2A1608;
+    --texto: #FFF1E0;
+    --texto-suave: #FFD9B0;
+    --card-borda: rgba(255, 201, 51, 0.35);
+  }
+}
+
+/* Modo escuro forçado (data-theme="dark" no <html>) */
+:root[data-theme="dark"] {
+  --card: #2A1608;
+  --texto: #FFF1E0;
+  --texto-suave: #FFD9B0;
+  --card-borda: rgba(255, 201, 51, 0.35);
+}
+
+
+/* ==========================================================================
+   2. BASE DA PÁGINA
+   ========================================================================== */
+
+html {
+  height: 100%;
+  scroll-padding-top: env(safe-area-inset-top, 0px);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100%;
+  overflow-x: hidden;
+
+  font-family: var(--fonte-texto);
+  color: var(--branco);
+
+  /* Fundo laranja com manchas amarelas nos cantos */
+  background-color: var(--laranja);
+  background-attachment: fixed;
+  background-image:
+    radial-gradient(circle at 15% 10%, var(--amarelo) 0, transparent 38%),
+    radial-gradient(circle at 90% 85%, var(--amarelo) 0, transparent 35%),
+    linear-gradient(160deg, #FF8A1F 0%, var(--laranja) 55%, var(--laranja-escuro) 100%);
+}
+
+
+/* ==========================================================================
+   3. FUNDO (canvas, sol e bolinhas)
+   ========================================================================== */
+
+/* Canvas com a foto em efeito dither (desenhado por js/fundo.js).
+   Para o fundo ficar mais discreto, diminua a opacidade. */
+#fundo {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* Raios do sol (escondidos por enquanto; troque para "block" para voltar) */
+.sol {
+  display: none;
+  position: fixed;
+  top: -14vw;
+  right: -18vw;
+  width: min(70vw, 420px);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: repeating-conic-gradient(
+    from 0deg,
+    rgba(255, 226, 122, 0.35) 0 8deg,
+    transparent 8deg 20deg
+  );
+  animation: gira 60s linear infinite;
+  pointer-events: none;
+  z-index: 0;
+}
+
+@keyframes gira {
+  to { transform: rotate(360deg); }
+}
+
+/* Bolinhas decorativas */
+.bola {
+  position: fixed;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.14);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.b1 {
+  width: 120px;
+  height: 120px;
+  left: -40px;
+  bottom: 18%;
+}
+
+.b2 {
+  width: 70px;
+  height: 70px;
+  right: 8%;
+  bottom: 8%;
+  background: rgba(255, 201, 51, 0.35);
+}
+
+
+/* ==========================================================================
+   4. LAYOUT GERAL E TROCA DE TELAS
+   ========================================================================== */
+
+main {
+  position: relative;
+  z-index: 1;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 28px 20px 20px;
+  text-align: center;
+}
+
+/* Cada "tela" (início e mensagem). Só uma fica visível por vez. */
+.tela {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 560px;
+}
+
+.tela.ativa {
+  display: flex;
+  animation: entra 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes entra {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+
+/* ==========================================================================
+   5. TELA INICIAL
+   ========================================================================== */
+
+/* Etiqueta "ACAMPs 2027" no topo */
+.selo {
+  margin-bottom: 26px;
+  padding: 6px 16px;
+  border-radius: 999px;
+
+  font-family: var(--fonte-titulo);
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--laranja-escuro);
+
+  background: var(--branco);
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.12);
+}
+
+h1 {
+  margin: 0 0 12px;
+
+  font-family: var(--fonte-titulo);
+  font-weight: 800;
+  font-size: clamp(2.1rem, 9vw, 3.3rem);
+  line-height: 1.05;
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.12);
+}
+
+.sub {
+  max-width: 30ch;
+  margin: 0 0 34px;
+  font-size: 1.1rem;
+  opacity: 0.95;
+}
+
+
+/* ==========================================================================
+   6. BOTÕES
+   ========================================================================== */
+
+/* Botão principal (amarelo, estilo "3D") */
+.btn {
+  min-height: 56px;
+  padding: 18px 34px;
+  border: 0;
+  border-radius: 999px;
+  cursor: pointer;
+
+  font-family: var(--fonte-titulo);
+  font-weight: 800;
+  font-size: 1.2rem;
+  color: var(--texto);
+
+  background: var(--amarelo);
+  box-shadow:
+    0 6px 0 #D9A200,
+    0 14px 28px rgba(120, 40, 0, 0.3);
+
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+}
+
+/* Ao clicar, o botão "afunda" */
+.btn:active {
+  transform: translateY(5px);
+  box-shadow:
+    0 1px 0 #D9A200,
+    0 6px 12px rgba(120, 40, 0, 0.3);
+}
+
+/* Variação grande da tela inicial (pulsa de leve) */
+.btn.grande {
+  padding: 22px 38px;
+  font-size: 1.35rem;
+  animation: pulsa 2.4s ease-in-out infinite;
+}
+
+@keyframes pulsa {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.045); }
+}
+
+/* Botões discretos (voltar, compartilhar) */
+.link {
+  padding: 12px;
+  border: 0;
+  background: none;
+  cursor: pointer;
+
+  font: 600 1rem var(--fonte-texto);
+  color: var(--branco);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  opacity: 0.9;
+}
+
+.link:hover {
+  opacity: 1;
+}
+
+/* Botões lado a lado, abaixo do cartão */
+.acoes {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 26px;
+}
+
+
+/* ==========================================================================
+   7. CARTÃO DA MENSAGEM
+   ========================================================================== */
+
+.cartao {
+  position: relative;
+  width: 100%;
+  margin-bottom: 22px;
+  padding: 34px 24px 26px;
+
+  text-align: center;
+  color: var(--texto);
+
+  background: var(--card);
+  border: 3px solid var(--card-borda);
+  border-radius: 28px;
+  box-shadow: 0 18px 40px rgba(120, 40, 0, 0.35);
+}
+
+/* Aspas amarelas no topo do cartão */
+.cartao::before {
+  content: "“";
+  position: absolute;
+  top: -6px;
+  left: 50%;
+  transform: translateX(-50%);
+
+  font: 800 5rem/1 var(--fonte-titulo);
+  color: var(--amarelo);
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.08);
+}
+
+/* Texto do versículo */
+.versiculo {
+  margin: 22px 0 12px;
+
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  font-size: clamp(1.3rem, 5.4vw, 1.75rem);
+  line-height: 1.3;
+}
+
+/* Etiqueta com a referência (ex.: João 3,16) */
+.ref {
+  display: inline-block;
+  margin-bottom: 18px;
+  padding: 4px 14px;
+  border-radius: 999px;
+
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--branco);
+
+  background: var(--laranja);
+}
+
+/* Frase de reflexão */
+.frase {
+  max-width: 40ch;
+  margin: 0 auto;
+
+  font-size: 1.05rem;
+  line-height: 1.55;
+  color: var(--texto-suave);
+}
+
+/* Animação ao sortear uma nova mensagem */
+.cartao.troca {
+  animation: vira 0.55s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes vira {
+  from {
+    opacity: 0;
+    transform: rotateX(-25deg) translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+
+/* ==========================================================================
+   8. CHAMADA DO ACAMPs 2027
+   ========================================================================== */
+
+.acamps {
+  width: 100%;
+  padding: 22px 20px;
+
+  background: rgba(255, 255, 255, 0.18);
+  border: 2px dashed rgba(255, 255, 255, 0.7);
+  border-radius: 24px;
+  backdrop-filter: blur(4px);
+}
+
+.acamps p {
+  margin: 0 0 10px;
+  font-size: 1.08rem;
+  line-height: 1.5;
+}
+
+/* Nome do evento em destaque */
+.acamps .nome {
+  margin: 6px 0 12px;
+
+  font-family: var(--fonte-titulo);
+  font-weight: 800;
+  font-size: clamp(2rem, 9vw, 2.8rem);
+  line-height: 1;
+  color: var(--branco);
+  text-shadow: 0 3px 0 rgba(0, 0, 0, 0.15);
+}
+
+/* Botão "Mais Informações" */
+.custom-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+
+  font-family: Montserrat, system-ui, sans-serif;
+  font-weight: bold;
+  color: #ffffff;
+  text-decoration: none;
+
+  background-color: #ffc833;
+  border: 1px solid #ffc833;
+  border-radius: 16px;
+  cursor: pointer;
+}
+
+.custom-button:hover {
+  color: #ffffff;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  filter: brightness(110%);
+  transform: scale(0.95);
+  transition: all 0.3s ease;
+}
+
+
+/* ==========================================================================
+   9. RODAPÉ  (9b = player de música)
+   ========================================================================== */
+
+footer {
+  position: relative;
+  z-index: 1;
+  padding: 18px 20px 26px;
+  text-align: center;
+  font-size: 0.95rem;
+}
+
+footer strong {
+  display: block;
+  font-family: var(--fonte-titulo);
+  font-size: 1.1rem;
+}
+
+footer a {
+  font-weight: 700;
+  color: var(--branco);
+  text-underline-offset: 4px;
+}
+
+
+/* ==========================================================================
+   9b. PLAYER DE MÚSICA (canto inferior direito, estilo "tocando agora")
+   ========================================================================== */
+
+.player {
+  position: fixed;
+  right: 14px;
+  bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  z-index: 5;
+}
+
+/* Botão redondo com nota musical */
+.pl-btn {
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  cursor: pointer;
+
+  color: #3A1C08;
+  background: var(--amarelo);
+  box-shadow: 0 4px 0 #D9A200, 0 10px 20px rgba(120, 40, 0, 0.3);
+  transition: transform 0.15s;
+}
+
+.pl-btn:hover  { transform: translateY(-2px); }
+.pl-btn:active { transform: translateY(3px); }
+
+/* Cartão do player (fica escondido até abrir; o vídeo continua tocando) */
+.pl-card {
+  position: absolute;
+  right: 0;
+  bottom: 64px;
+  width: min(290px, calc(100vw - 28px));
+  max-height: calc(100dvh - 100px);
+  overflow-y: auto;
+  padding: 10px 16px 16px;
+
+  color: #FFFFFF;
+  background: #1C1C1E;
+  border-radius: 28px;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.45);
+
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(12px) scale(0.97);
+  transition: opacity 0.25s, transform 0.25s, visibility 0.25s;
+}
+
+.pl-card.aberto {
+  visibility: visible;
+  opacity: 1;
+  transform: none;
+}
+
+/* Barrinha branca no topo (toque para fechar) */
+.pl-handle {
+  display: block;
+  width: 64px;
+  height: 22px;
+  margin: 0 auto 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.pl-handle::after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 5px;
+  border-radius: 3px;
+  background: #FFFFFF;
+}
+
+/* Quadrado preto onde aparece o vídeo */
+.pl-tela {
+  display: grid;
+  place-items: center;
+  aspect-ratio: 1;
+  overflow: hidden;
+  background: #000000;
+  border-radius: 18px;
+}
+
+.pl-video {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+
+.pl-video iframe {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  pointer-events: none;   /* os controles são os do nosso player */
+}
+
+.pl-aviso {
+  display: none;
+  margin: 0;
+  font-weight: 700;
+  color: #FFFFFF;
+}
+
+/* Sem link configurado: mostra o aviso e deixa os controles apagados */
+.pl-card.sem-musica .pl-video { display: none; }
+.pl-card.sem-musica .pl-aviso { display: block; }
+.pl-card.sem-musica .pl-ctrl,
+.pl-card.sem-musica .pl-vol,
+.pl-card.sem-musica .rg.prog,
+.pl-card.sem-musica .pl-tempos { opacity: 0.35; pointer-events: none; }
+
+/* Título e link do YouTube */
+.pl-info {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 14px 2px 12px;
+  font-weight: 800;
+}
+
+.pl-info a {
+  flex-shrink: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #BDBDC2;
+}
+
+/* Barras (progresso e volume) */
+.rg {
+  display: block;
+  width: 100%;
+  height: 24px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  --p: 0%;
+}
+
+.rg::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(to right, #FFFFFF var(--p), #5A5A5E var(--p));
+}
+
+.rg::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(to right, #FFFFFF var(--p), #5A5A5E var(--p));
+}
+
+.rg::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 14px;
+  height: 14px;
+  margin-top: -5px;
+  border: 0;
+  border-radius: 50%;
+  background: #FFFFFF;
+}
+
+.rg::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border: 0;
+  border-radius: 50%;
+  background: #FFFFFF;
+}
+
+.rg.prog::-webkit-slider-thumb { width: 8px; height: 8px; margin-top: -2px; }
+.rg.prog::-moz-range-thumb     { width: 8px; height: 8px; }
+
+.pl-tempos {
+  display: flex;
+  justify-content: space-between;
+  margin-top: -2px;
+  font-size: 0.8rem;
+  color: #BDBDC2;
+}
+
+/* Voltar, tocar/pausar e avançar */
+.pl-ctrl {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  margin: 8px 0 6px;
+}
+
+.pl-ctrl button {
+  display: grid;
+  place-items: center;
+  padding: 8px;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  color: #FFFFFF;
+}
+
+.pl-ctrl button:active { transform: scale(0.9); }
+
+/* Alterna entre o ícone de play e o de pausa */
+.pl-play .i-pause        { display: none; }
+.pl-play.tocando .i-play { display: none; }
+.pl-play.tocando .i-pause { display: block; }
+
+/* Volume */
+.pl-vol {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #BDBDC2;
+}
+
+.pl-vol .rg { flex: 1; }
+
+.pl-btn:focus-visible,
+.pl-card button:focus-visible,
+.pl-card a:focus-visible { outline: 3px solid var(--amarelo); outline-offset: 2px; }
+
+
+/* ==========================================================================
+   10. ACESSIBILIDADE
+   ========================================================================== */
+
+/* Contorno visível ao navegar pelo teclado */
+.btn:focus-visible,
+.link:focus-visible,
+a:focus-visible {
+  outline: 3px solid var(--branco);
+  outline-offset: 4px;
+}
+
+/* Quem prefere menos movimento não vê animações */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}

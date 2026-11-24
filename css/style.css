@@ -210,19 +210,7 @@ main {
    ========================================================================== */
 
 /* Etiqueta "ACAMPs 2027" no topo */
-.selo {
-  margin-bottom: 26px;
-  padding: 6px 16px;
-  border-radius: 999px;
 
-  font-family: var(--fonte-titulo);
-  font-weight: 800;
-  font-size: 1rem;
-  color: var(--laranja-escuro);
-
-  background: var(--branco);
-  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.12);
-}
 
 h1 {
   margin: 0 0 12px;
@@ -261,7 +249,7 @@ h1 {
 
   background: var(--amarelo);
   box-shadow:
-    0 6px 0 #D9A200,
+    0 6px 0 #000000,
     0 14px 28px rgba(120, 40, 0, 0.3);
 
   transition: transform 0.15s, box-shadow 0.15s;

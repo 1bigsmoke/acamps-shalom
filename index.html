@@ -5,7 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Uma mensagem para você · ACAMPs 2027</title>
 <meta name="description" content="Receba uma mensagem da Palavra de Deus pensada para você. Comunidade Católica Shalom de Santos · ACAMPs 2027.">
-<meta name="theme-color" content="#FF6A00">
+<meta name="theme-color" content="#FF7C26">
+<link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="img/facivon.png">
+<link rel="apple-touch-icon" href="img/favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Montserrat:wght@700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
@@ -58,48 +61,7 @@
   <a href="https://www.instagram.com/shalomsantos/" target="_blank" rel="noopener noreferrer">@comunidadeshalomsantos</a>
 </footer>
 
-<!-- Player de música (canto inferior direito). Link e trecho em js/musica.js -->
-<div class="player" id="player">
-  <div class="pl-card" id="plCard">
-    <button class="pl-handle" id="plFechar" type="button" aria-label="Fechar player"></button>
 
-    <div class="pl-tela">
-      <div class="pl-video"><div id="plAlvo"></div></div>
-      <p class="pl-aviso">TENDAS</p>
-    </div>
-
-    <div class="pl-info">
-      <span id="plTitulo"></span>
-      <a id="plLink" href="#" target="_blank" rel="noopener noreferrer">YouTube ↗</a>
-    </div>
-
-    <input class="rg prog" id="plProg" type="range" min="0" max="1000" value="0" aria-label="Progresso da música">
-    <div class="pl-tempos"><span id="plAtual">0:00</span><span id="plResta">-0:00</span></div>
-
-    <div class="pl-ctrl">
-      <button type="button" id="plVolta" aria-label="Voltar 10 segundos">
-        <svg viewBox="0 0 24 24" width="34" height="34" fill="currentColor" aria-hidden="true"><path d="M11 18V6l-8.5 6 8.5 6zm.5-6 8.5 6V6l-8.5 6z"/></svg>
-      </button>
-      <button type="button" id="plPlay" class="pl-play" aria-label="Tocar ou pausar">
-        <svg class="i-play" viewBox="0 0 24 24" width="44" height="44" fill="currentColor" aria-hidden="true"><path d="M7 4.5v15l13-7.5z"/></svg>
-        <svg class="i-pause" viewBox="0 0 24 24" width="44" height="44" fill="currentColor" aria-hidden="true"><path d="M6 4h4.5v16H6zM13.5 4H18v16h-4.5z"/></svg>
-      </button>
-      <button type="button" id="plAvanca" aria-label="Avançar 10 segundos">
-        <svg viewBox="0 0 24 24" width="34" height="34" fill="currentColor" aria-hidden="true"><path d="M13 6v12l8.5-6L13 6zm-.5 6L4 6v12l8.5-6z"/></svg>
-      </button>
-    </div>
-
-    <div class="pl-vol">
-      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3z"/></svg>
-      <input class="rg vol" id="plVol" type="range" min="0" max="100" value="70" aria-label="Volume">
-      <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor" aria-hidden="true"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3A4.5 4.5 0 0 0 14 8v8a4.5 4.5 0 0 0 2.5-4zM14 3.2v2.1a7 7 0 0 1 0 13.4v2.1a9 9 0 0 0 0-17.6z"/></svg>
-    </div>
-  </div>
-
-  <button class="pl-btn" id="plBtn" type="button" aria-expanded="false" aria-controls="plCard" aria-label="Ouvir música">
-    <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor" aria-hidden="true"><path d="M9 3v11.6A3.5 3.5 0 1 0 11 18V8h6V3H9z"/></svg>
-  </button>
-</div>
 
 
 <script src="js/mensagens.js"></script>

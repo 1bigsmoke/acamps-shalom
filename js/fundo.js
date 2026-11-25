@@ -3,6 +3,7 @@
    No celular (tela em pé) a foto é encaixada inteira, com células menores,
    e as bordas se dissolvem no dourado do fundo para não aparecer corte seco. */
 const FUNDO = {
+  ativo: false,
   cell: 9,               // tamanho da célula no computador (px)
   cellMobile: 6,         // tamanho da célula no celular (menor = mais detalhe)
   zoomMobile: 1.3,       // 1 = foto inteira na largura; maior = mais perto do rosto
@@ -16,6 +17,7 @@ const FUNDO = {
 
 (function () {
   const cv = document.getElementById("fundo"), ctx = cv.getContext("2d");
+  if (!FUNDO.ativo) {cv.style.dysplay = "nome"; return; }
   const BAYER = [0,8,2,10,12,4,14,6,3,11,1,9,15,7,13,5].map(v => (v + .5) / 16);
   const PALETA = Array.from({length: 125}, (_, k) =>
     "rgb(" + [Math.floor(k / 25), Math.floor(k / 5) % 5, k % 5].map(q => Math.round(q * 63.75)).join(",") + ")");

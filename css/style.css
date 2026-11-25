@@ -87,12 +87,30 @@ body {
   color: var(--branco);
 
   /* Fundo laranja com manchas amarelas nos cantos */
-  background-color: var(--laranja);
+   background-color: #FF7C26;
   background-attachment: fixed;
   background-image:
-    radial-gradient(circle at 15% 10%, var(--amarelo) 0, transparent 38%),
-    radial-gradient(circle at 90% 85%, var(--amarelo) 0, transparent 35%),
-    linear-gradient(160deg, #FF8A1F 0%, var(--laranja) 55%, var(--laranja-escuro) 100%);
+    radial-gradient(circle at 15% 10%, rgba(255, 201, 51, 0.7) 0, transparent 38%),
+    radial-gradient(circle at 90% 85%, rgba(255, 201, 51, 0.7) 0, transparent 35%),
+    linear-gradient(160deg, #FF9640 0%, #FF7C26 55%, #EF6418 100%);
+}
+
+/* Logo da Shalom como imagem de fundo */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+
+  background: url("../img/logo-fundo.png") center / min(88vw, 580px) no-repeat;
+  opacity: 0.22;
+  animation: respira 9s ease-in-out infinite;
+}
+
+@keyframes respira {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.04); }
 }
 
 
